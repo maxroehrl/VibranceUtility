@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 256 256" style="enable-background:new 0 0 256 256;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#F23636;}
+	.st1{fill:#FFFFFF;}
+</style>
+<rect class="st0" width="256" height="256"/>
+<g>
+	<g>
+		<path class="st1" d="M27.4,165.9c-1.5,0-2.7-1.2-2.7-2.7V51.5c0-1.5,1.2-2.7,2.7-2.7h201.2c1.5,0,2.7,1.2,2.7,2.7v111.7
+			c0,1.5-1.2,2.7-2.7,2.7H27.4z"/>
+		<path d="M228.3,51.8v111.1H27.7V51.8H228.3 M228.6,45.8H27.4c-3.1,0-5.7,2.6-5.7,5.7v111.7c0,3.1,2.6,5.7,5.7,5.7h201.2
+			c3.1,0,5.7-2.6,5.7-5.7V51.5C234.3,48.4,231.7,45.8,228.6,45.8L228.6,45.8z"/>
+	</g>
+	<g>
+		<rect x="121.3" y="170.4" width="13.5" height="42.6"/>
+		<path d="M133.2,171.9v39.6h-10.5v-39.6H133.2 M136.2,168.9h-16.5v45.6h16.5V168.9L136.2,168.9z"/>
+	</g>
+	<g>
+		<rect x="84.8" y="216" width="86.3" height="6.7"/>
+		<path d="M169.7,217.5v3.7H86.3v-3.7H169.7 M172.7,214.5H83.3v9.7h89.3V214.5L172.7,214.5z"/>
+	</g>
+</g>
+</svg>
