@@ -125,7 +125,7 @@ bool ADL::IsFeatureSupported(const DisplayAdapterInfo display, const int feature
 	return feature & iColorCaps;
 }
 
-void* __stdcall ADL::ADL_Main_Memory_Alloc(int iSize) {
+void* __stdcall ADL::ADL_Main_Memory_Alloc(const int iSize) {
 	return malloc(iSize);
 }
 

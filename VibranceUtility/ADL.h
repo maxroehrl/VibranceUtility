@@ -48,6 +48,6 @@ private:
 	bool IsFeatureSupported(const DisplayAdapterInfo info, const int feature) const;
 
 	// Private memory (de-)allocation and functions.
-	static void* __stdcall ADL_Main_Memory_Alloc(int iSize);
+	static void* __stdcall ADL_Main_Memory_Alloc(const int iSize);
 	static void __stdcall ADL_Main_Memory_Free(void** lpBuffer);
 };
