@@ -67,7 +67,7 @@ LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-std::unique_ptr<DriverInterface> __stdcall CreateDriverInterface(HWND hWnd) {
+std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 	bool isNvidiaDriverPresent = std::experimental::filesystem::exists("C:/Windows/System32/nvapi64.dll") ||
 		std::experimental::filesystem::exists("C:/Windows/System32/nvapi.dll");
 	bool isAMDDriverPresent = std::experimental::filesystem::exists("C:/Windows/System32/atiadlxx.dll") ||
@@ -87,13 +87,20 @@ std::unique_ptr<DriverInterface> __stdcall CreateDriverInterface(HWND hWnd) {
 	return nullptr;
 }
 
-HWND __stdcall CreateComboBox(HWND hWnd) {
+HWND CreateComboBox(HWND hWnd) {
 	HWND hWndComboBox = CreateWindow(WC_COMBOBOX, L"Monitor combobox",
 		CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VISIBLE,
 		10, 10, 235, 50,
 		hWnd, nullptr, hInst, nullptr);
+	std::vector<std::wstring> displays = driverInterface->GetDisplayNames();
 
-	for (auto const& display : driverInterface->GetDisplayNames()) {
+	if (displays.empty()) {
+		MessageBox(hWnd, L"No display supports changing the digitial vibrance!", L"No supported displays", MB_OK);
+		PostMessage(hWnd, WM_CLOSE, 0, 0);
+		return nullptr;
+	}
+
+	for (auto const& display : displays) {
 		if (selectedDisplay.empty()) {
 			selectedDisplay = display;
 		}
@@ -107,7 +114,7 @@ HWND __stdcall CreateComboBox(HWND hWnd) {
 	return hWndComboBox;
 }
 
-HWND __stdcall CreateLabel(HWND hWnd) {
+HWND CreateLabel(HWND hWnd) {
 	HWND hWndLabel = CreateWindow(WC_STATIC, L"", WS_CHILD | WS_VISIBLE,
 		10, 50, 235, 30,
 		hWnd, nullptr, hInst, nullptr);
@@ -115,7 +122,7 @@ HWND __stdcall CreateLabel(HWND hWnd) {
 	return hWndLabel;
 }
 
-HWND __stdcall CreateTrackBar(HWND hWnd) {
+HWND CreateTrackBar(HWND hWnd) {
 	HWND hWndTrackbar = CreateWindow(TRACKBAR_CLASS, L"Saturation trackbar",
 		WS_CHILD | WS_VISIBLE,
 		10, 90, 235, 30,
@@ -128,7 +135,7 @@ HWND __stdcall CreateTrackBar(HWND hWnd) {
 	return hWndTrackbar;
 }
 
-void __stdcall UpdateSelectedDisplay(HWND hWndCombobox) {
+void UpdateSelectedDisplay(HWND hWndCombobox) {
 	// Get the index of the selected display.
 	LRESULT selectedIndex = SendMessage(hWndCombobox, CB_GETCURSEL, 0, 0);
 
@@ -140,14 +147,14 @@ void __stdcall UpdateSelectedDisplay(HWND hWndCombobox) {
 	UpdateTrackBar(trackbar);
 }
 
-void __stdcall UpdateSaturation(HWND hWndTrackbar) {
+void UpdateSaturation(HWND hWndTrackbar) {
 	// Set saturation and update the level with the new one.
 	int newValue = static_cast<int>(SendMessage(hWndTrackbar, TBM_GETPOS, 0, 0));
 	driverInterface->SetSaturation(selectedDisplay, newValue);
 	UpdateLabel(label);
 }
 
-void __stdcall UpdateTrackBar(HWND hwndTrack) {
+void UpdateTrackBar(HWND hwndTrack) {
 	DriverInterface::FeatureValues info = driverInterface->GetSaturationInfo(selectedDisplay);
 
 	// Update the min, max and current saturation.
@@ -155,7 +162,7 @@ void __stdcall UpdateTrackBar(HWND hwndTrack) {
 	SendMessage(hwndTrack, TBM_SETPOS, TRUE, info.currentValue);
 }
 
-void __stdcall UpdateLabel(HWND hWndLabel) {
+void UpdateLabel(HWND hWndLabel) {
 	DriverInterface::FeatureValues info = driverInterface->GetSaturationInfo(selectedDisplay);
 
 	// Update the text for default and max saturation.
@@ -164,7 +171,7 @@ void __stdcall UpdateLabel(HWND hWndLabel) {
 	SetWindowText(hWndLabel, buf);
 }
 
-bool __stdcall SetFont(HWND hWnd, WPARAM font) {
+BOOL __stdcall SetFont(HWND hWnd, LPARAM font) {
 	SendMessage(hWnd, WM_SETFONT, font, TRUE);
-	return true;
+	return TRUE;
 }

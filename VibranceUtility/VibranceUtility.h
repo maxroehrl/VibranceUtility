@@ -23,16 +23,16 @@ HWND label;
 // Functions
 LRESULT __stdcall WndProc(HWND, UINT, WPARAM, LPARAM);
 
-std::unique_ptr<DriverInterface> __stdcall CreateDriverInterface(HWND);
+std::unique_ptr<DriverInterface> CreateDriverInterface(HWND);
 
-HWND __stdcall CreateComboBox(HWND);
-HWND __stdcall CreateLabel(HWND);
-HWND __stdcall CreateTrackBar(HWND);
+HWND CreateComboBox(HWND);
+HWND CreateLabel(HWND);
+HWND CreateTrackBar(HWND);
 
-void __stdcall UpdateSelectedDisplay(HWND);
-void __stdcall UpdateSaturation(HWND);
+void UpdateSelectedDisplay(HWND);
+void UpdateSaturation(HWND);
 
-void __stdcall UpdateTrackBar(HWND);
-void __stdcall UpdateLabel(HWND);
+void UpdateTrackBar(HWND);
+void UpdateLabel(HWND);
 
-bool __stdcall SetFont(HWND, WPARAM);
+BOOL __stdcall SetFont(HWND, LPARAM);
