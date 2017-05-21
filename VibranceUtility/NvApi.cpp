@@ -22,22 +22,27 @@ NvApi::NvApi() {
 	NvAPI_GetDVCInfoEx                     = reinterpret_cast<NvAPI_GetDVCInfoEx_t>(                    (*NvAPI_QueryInterface)(0x0E45002D));
 	NvAPI_SetDVCLevel                      = reinterpret_cast<NvAPI_SetDVCLevel_t>(                     (*NvAPI_QueryInterface)(0x172409B4));
 	NvAPI_EnumNvidiaDisplayHandle          = reinterpret_cast<NvAPI_EnumNvidiaDisplayHandle_t>(         (*NvAPI_QueryInterface)(0x9ABDD40D));
+	NvApi_EnumPhysicalGPUs                 = reinterpret_cast<NvApi_EnumPhysicalGPUs_t>(                (*NvAPI_QueryInterface)(0xE5AC921F));
 	NvAPI_GetAssociatedNvidiaDisplayHandle = reinterpret_cast<NvAPI_GetAssociatedNvidiaDisplayHandle_t>((*NvAPI_QueryInterface)(0x35C29134));
 	NvAPI_GetAssociatedNvidiaDisplayName   = reinterpret_cast<NvAPI_GetAssociatedNvidiaDisplayName_t>(  (*NvAPI_QueryInterface)(0x22A78B05));
+	NvApi_GPU_GetSystemType                = reinterpret_cast<NvApi_GPU_GetSystemType_t>(               (*NvAPI_QueryInterface)(0xBAAABFCC));
 
 	NvAPI_Initialize();
 
-	// Add all displays to the display names vector.
-	int counter = 0;
-	NvDisplayHandle handle = nullptr;
-	char name[64] = { 0 };
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	int status = (*NvAPI_EnumNvidiaDisplayHandle)(counter, &handle);
+	// Only desktop GPUs support changing the digital vibrance.
+	if (IsDesktopGPU()) {
+		// Add all displays to the display names vector.
+		int counter = 0;
+		NvDisplayHandle handle = nullptr;
+		char name[64] = {0};
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+		int status = (*NvAPI_EnumNvidiaDisplayHandle)(counter, &handle);
 
-	while (status != NVAPI_END_ENUMERATION) {
-		status = (*NvAPI_EnumNvidiaDisplayHandle)(++counter, &handle);
-		NvAPI_GetAssociatedNvidiaDisplayName(handle, name);
-		displayNames.push_back(converter.from_bytes(name));
+		while (status != NVAPI_END_ENUMERATION) {
+			status = (*NvAPI_EnumNvidiaDisplayHandle)(++counter, &handle);
+			NvAPI_GetAssociatedNvidiaDisplayName(handle, name);
+			displayNames.push_back(converter.from_bytes(name));
+		}
 	}
 }
 
@@ -70,4 +75,14 @@ NvApi::NvDisplayHandle NvApi::GetHandle(const std::wstring displayName) const {
 	NvDisplayHandle handle = nullptr;
 	NvAPI_GetAssociatedNvidiaDisplayHandle(converter.to_bytes(displayName).c_str(), &handle);
 	return handle;
+}
+
+bool NvApi::IsDesktopGPU() const {
+	int count, system_type;
+	NvPhysicalGpuHandle handles[64] = {nullptr};
+
+	NvApi_EnumPhysicalGPUs(handles, &count);
+	NvApi_GPU_GetSystemType(handles[0], &system_type);
+
+	return system_type == NV_SYSTEM_TYPE_DESKTOP;
 }
