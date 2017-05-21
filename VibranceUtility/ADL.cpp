@@ -39,38 +39,38 @@ ADL::ADL() {
 	// Repeat for all available adapters in the system.
 	for (int i = 0; i < numberAdapters; i++) {
 		int iAdapterIndex = adapterInfo[i].iAdapterIndex;
-		LPADLDisplayInfo lpAdlDisplayInfo = nullptr;
-		int iNumDisplays;
+		LPADLDisplayInfo adlDisplayInfo = nullptr;
+		int numDisplays;
 
-		if (ADL_OK != ADL_Display_DisplayInfo_Get(iAdapterIndex, &iNumDisplays, &lpAdlDisplayInfo, 0)) {
+		if (ADL_OK != ADL_Display_DisplayInfo_Get(iAdapterIndex, &numDisplays, &adlDisplayInfo, 0)) {
 			continue;
 		}
 
-		for (int j = 0; j < iNumDisplays; j++) {
+		for (int j = 0; j < numDisplays; j++) {
 			// For each display, check its status.
 			// Use the display only if it's connected AND mapped (iDisplayInfoValue: bit 0 and 1).
 			if ((ADL_DISPLAY_DISPLAYINFO_DISPLAYCONNECTED | ADL_DISPLAY_DISPLAYINFO_DISPLAYMAPPED) !=
 				(ADL_DISPLAY_DISPLAYINFO_DISPLAYCONNECTED | ADL_DISPLAY_DISPLAYINFO_DISPLAYMAPPED &
-					lpAdlDisplayInfo[j].iDisplayInfoValue)) {
+					adlDisplayInfo[j].iDisplayInfoValue)) {
 				continue;
 			}
 
 			// Check if the display is mapped to the current adapter.
-			if (iAdapterIndex != lpAdlDisplayInfo[j].displayID.iDisplayLogicalAdapterIndex) {
+			if (iAdapterIndex != adlDisplayInfo[j].displayID.iDisplayLogicalAdapterIndex) {
 				continue;
 			}
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 			DisplayAdapterInfo display;
 			display.adapterIndex = iAdapterIndex;
-			display.displayIndex = lpAdlDisplayInfo[j].displayID.iDisplayLogicalIndex;
-			display.name = converter.from_bytes(lpAdlDisplayInfo[j].strDisplayName);
+			display.displayIndex = adlDisplayInfo[j].displayID.iDisplayLogicalIndex;
+			display.name = converter.from_bytes(adlDisplayInfo[j].strDisplayName);
 
 			// Check if display supports changing the saturation.
 			if (IsFeatureSupported(display, ADL_DISPLAY_COLOR_SATURATION)) {
 				displays.push_back(display);
 			}
 		}
-		ADL_Main_Memory_Free(reinterpret_cast<void**>(&lpAdlDisplayInfo));
+		ADL_Main_Memory_Free(reinterpret_cast<void**>(&adlDisplayInfo));
 	}
 }
 
@@ -83,7 +83,7 @@ ADL::~ADL() {
 std::vector<std::wstring> ADL::GetDisplayNames() const {
 	std::vector<std::wstring> names{};
 
-	for (DisplayAdapterInfo display : displays) {
+	for (auto const& display : displays) {
 		names.push_back(display.name);
 	}
 	return names;
@@ -106,9 +106,9 @@ void ADL::SetSaturation(const std::wstring displayName, const int newValue) cons
 }
 
 ADL::DisplayAdapterInfo ADL::GetDisplayInfo(const std::wstring displayName) const {
-	for(const auto& info : displays) {
-		if (info.name == displayName) {
-			return info;
+	for(auto const& display : displays) {
+		if (display.name == displayName) {
+			return display;
 		}
 	}
 	return {};

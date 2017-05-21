@@ -18,14 +18,14 @@ private:
 	};
 
 	// Definitions of the used function pointers
-	using ADL_MAIN_CONTROL_CREATE = int(*)(ADL_MAIN_MALLOC_CALLBACK, int);
-	using ADL_MAIN_CONTROL_DESTROY = int(*)();
+	using ADL_MAIN_CONTROL_CREATE          = int(*)(ADL_MAIN_MALLOC_CALLBACK, int);
+	using ADL_MAIN_CONTROL_DESTROY         = int(*)();
 	using ADL_ADAPTER_NUMBEROFADAPTERS_GET = int(*)(int*);
-	using ADL_ADAPTER_ADAPTERINFO_GET = int(*)(LPAdapterInfo, int);
-	using ADL_DISPLAY_COLORCAPS_GET = int(*)(int, int, int*, int*);
-	using ADL_DISPLAY_COLOR_GET = int(*)(int, int, int, int*, int*, int*, int*, int*);
-	using ADL_DISPLAY_COLOR_SET = int(*)(int, int, int, int);
-	using ADL_DISPLAY_DISPLAYINFO_GET = int(*)(int, int*, ADLDisplayInfo**, int);
+	using ADL_ADAPTER_ADAPTERINFO_GET      = int(*)(LPAdapterInfo, int);
+	using ADL_DISPLAY_COLORCAPS_GET        = int(*)(int, int, int*, int*);
+	using ADL_DISPLAY_COLOR_GET            = int(*)(int, int, int, int*, int*, int*, int*, int*);
+	using ADL_DISPLAY_COLOR_SET            = int(*)(int, int, int, int);
+	using ADL_DISPLAY_DISPLAYINFO_GET      = int(*)(int, int*, ADLDisplayInfo**, int);
 
 	// Function pointers
 	ADL_MAIN_CONTROL_CREATE          ADL_Main_Control_Create;
