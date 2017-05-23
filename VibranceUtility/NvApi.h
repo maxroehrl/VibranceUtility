@@ -13,17 +13,8 @@ private:
 	const int NVAPI_END_ENUMERATION = -7;
 	const int NV_SYSTEM_TYPE_DESKTOP = 2;
 
-	struct NvDisplayHandle__ {
-		int unused;
-	};
-
-	using NvDisplayHandle = NvDisplayHandle__*;
-
-	struct NvPhysicalGpuHandle__ {
-		int unused;
-	};
-
-	using NvPhysicalGpuHandle = NvPhysicalGpuHandle__*;
+	DECLARE_HANDLE(NvDisplayHandle);
+	DECLARE_HANDLE(NvPhysicalGpuHandle);
 
 	struct NV_DISPLAY_DVC_INFO_EX {
 		unsigned int version;
