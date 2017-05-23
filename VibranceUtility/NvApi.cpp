@@ -60,14 +60,16 @@ DriverInterface::FeatureValues NvApi::GetSaturationInfo(const std::wstring displ
 	info.version = sizeof(NV_DISPLAY_DVC_INFO_EX) | 0x10000;
 	NvAPI_GetDVCInfoEx(GetHandle(displayName), 0, &info);
 
-	// HACK: The reported max of 100 does not set the vibrance higher than 63.
-	info.maxLevel = 63;
+	// HACK: The reported min digital vibrance of 0 sets the vibrance to 50.
+	info.currentLevel = 2 * (info.currentLevel - 50);
+	info.defaultLevel -= 50;
 
 	return {info.currentLevel, info.defaultLevel, info.minLevel, info.maxLevel};
 }
 
 void NvApi::SetSaturation(const std::wstring displayName, const int newValue) const {
-	NvAPI_SetDVCLevel(GetHandle(displayName), 0, newValue);
+	// HACK: The reported max digital vibrance of 100 gets already set with the newValue 63.
+	NvAPI_SetDVCLevel(GetHandle(displayName), 0, newValue * 0.63);
 }
 
 NvApi::NvDisplayHandle NvApi::GetHandle(const std::wstring displayName) const {
