@@ -39,9 +39,9 @@ NvApi::NvApi() {
 		int status = (*NvAPI_EnumNvidiaDisplayHandle)(counter, &handle);
 
 		while (status != NVAPI_END_ENUMERATION) {
-			status = (*NvAPI_EnumNvidiaDisplayHandle)(++counter, &handle);
 			NvAPI_GetAssociatedNvidiaDisplayName(handle, name);
 			displayNames.push_back(converter.from_bytes(name));
+			status = (*NvAPI_EnumNvidiaDisplayHandle)(++counter, &handle);
 		}
 	}
 }
