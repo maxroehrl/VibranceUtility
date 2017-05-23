@@ -2,6 +2,7 @@
 #include "VibranceUtility.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	HBRUSH brush = CreateSolidBrush(RGB(240, 240, 240));
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = WndProc;
@@ -10,7 +11,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	wc.hInstance = hInstance;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON));
-	wc.hbrBackground = GetSysColorBrush(BLACK_BRUSH);
+	wc.hbrBackground = brush;
 	wc.lpszClassName = szWindowClass;
 	wc.lpszMenuName = nullptr;
 	RegisterClass(&wc);
@@ -29,6 +30,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+	DeleteObject(brush);
 	return static_cast<int>(msg.wParam);
 }
 
