@@ -22,10 +22,10 @@ NvApi::NvApi() {
 	NvAPI_GetDVCInfoEx                     = reinterpret_cast<NvAPI_GetDVCInfoEx_t>(                    (*NvAPI_QueryInterface)(0x0E45002D));
 	NvAPI_SetDVCLevel                      = reinterpret_cast<NvAPI_SetDVCLevel_t>(                     (*NvAPI_QueryInterface)(0x172409B4));
 	NvAPI_EnumNvidiaDisplayHandle          = reinterpret_cast<NvAPI_EnumNvidiaDisplayHandle_t>(         (*NvAPI_QueryInterface)(0x9ABDD40D));
-	NvApi_EnumPhysicalGPUs                 = reinterpret_cast<NvApi_EnumPhysicalGPUs_t>(                (*NvAPI_QueryInterface)(0xE5AC921F));
+	NvAPI_EnumPhysicalGPUs                 = reinterpret_cast<NvAPI_EnumPhysicalGPUs_t>(                (*NvAPI_QueryInterface)(0xE5AC921F));
 	NvAPI_GetAssociatedNvidiaDisplayHandle = reinterpret_cast<NvAPI_GetAssociatedNvidiaDisplayHandle_t>((*NvAPI_QueryInterface)(0x35C29134));
 	NvAPI_GetAssociatedNvidiaDisplayName   = reinterpret_cast<NvAPI_GetAssociatedNvidiaDisplayName_t>(  (*NvAPI_QueryInterface)(0x22A78B05));
-	NvApi_GPU_GetSystemType                = reinterpret_cast<NvApi_GPU_GetSystemType_t>(               (*NvAPI_QueryInterface)(0xBAAABFCC));
+	NvAPI_GPU_GetSystemType                = reinterpret_cast<NvAPI_GPU_GetSystemType_t>(               (*NvAPI_QueryInterface)(0xBAAABFCC));
 
 	NvAPI_Initialize();
 
@@ -83,8 +83,8 @@ bool NvApi::IsDesktopGPU() const {
 	int count, system_type;
 	NvPhysicalGpuHandle handles[64] = {nullptr};
 
-	NvApi_EnumPhysicalGPUs(handles, &count);
-	NvApi_GPU_GetSystemType(handles[0], &system_type);
+	NvAPI_EnumPhysicalGPUs(handles, &count);
+	NvAPI_GPU_GetSystemType(handles[0], &system_type);
 
 	return system_type == NV_SYSTEM_TYPE_DESKTOP;
 }
