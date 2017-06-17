@@ -69,7 +69,7 @@ DriverInterface::FeatureValues NvApi::GetDigitalVibranceInfo(const std::wstring 
 
 void NvApi::SetDigitalVibrance(const std::wstring displayName, const int newValue) const {
 	// HACK: The reported max digital vibrance of 100 gets already set with the newValue 63.
-	NvAPI_SetDVCLevel(GetHandle(displayName), 0, newValue * 0.63);
+	NvAPI_SetDVCLevel(GetHandle(displayName), 0, static_cast<int>(newValue * 0.63));
 }
 
 NvApi::NvDisplayHandle NvApi::GetHandle(const std::wstring displayName) const {
