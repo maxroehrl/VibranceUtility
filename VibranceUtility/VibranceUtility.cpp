@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "VibranceUtility.h"
+#include "ADL.h"
+#include "NvApi.h"
+#include "resource.h"
 
 int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	HBRUSH brush = CreateSolidBrush(RGB(240, 240, 240));
@@ -20,7 +23,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 	HWND hWnd = CreateWindow(szWindowClass, L"Vibrance Utility",
 		WS_MINIMIZEBOX | WS_SYSMENU,
-		CW_USEDEFAULT, CW_USEDEFAULT, 270, 170,
+		CW_USEDEFAULT, CW_USEDEFAULT, 270, 430,
 		nullptr, nullptr, hInstance, nullptr);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -41,13 +44,7 @@ LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		// If the driver interface was created the controls can be added.
 		if (driverInterface != nullptr) {
-			combobox = CreateComboBox(hWnd);
-			label = CreateLabel(hWnd);
-			trackbar = CreateTrackBar(hWnd);
-
-			// Set the font of all controls.
-			EnumChildWindows(hWnd, reinterpret_cast<WNDENUMPROC>(SetFont),
-				reinterpret_cast<LPARAM>(GetStockObject(DEFAULT_GUI_FONT)));
+			CreateControls(hWnd);
 		}
 		break;
 	case WM_COMMAND:
@@ -56,9 +53,7 @@ LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_HSCROLL:
-		if (reinterpret_cast<HWND>(lParam) == trackbar) {
-			UpdateSaturation(trackbar);
-		}
+		UpdateFeatureValues(reinterpret_cast<HWND>(lParam));
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -75,6 +70,9 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 	bool isAMDDriverPresent = std::experimental::filesystem::exists("C:/Windows/System32/atiadlxx.dll") ||
 		std::experimental::filesystem::exists("C:/Windows/System32/atiadlxy.dll");
 
+	// This flag determines the available GUI controls.
+	isAMD = isAMDDriverPresent;
+
 	if (isAMDDriverPresent && isNvidiaDriverPresent) {
 		MessageBox(hWnd, L"Both AMD and Nvidia drivers were found!", L"Ambiguous drivers", MB_OK);
 		PostMessage(hWnd, WM_CLOSE, 0, 0);
@@ -89,9 +87,56 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 	return nullptr;
 }
 
+void CreateControls(HWND hWnd) {
+	Feature feature;
+	combobox = CreateComboBox(hWnd);
+
+	// If the combobox is null no supported displays were found.
+	if (combobox == nullptr) {
+		return;
+	}
+
+	if (!isAMD) {
+		// Add digital vibrance controls.
+		feature = CreateFeatureGroup(hWnd, L"Digital Vibrance", 45,
+			&DriverInterface::GetDigitalVibranceInfo, &DriverInterface::SetDigitalVibrance);
+		features.insert(std::make_pair(feature.trackbar, feature));
+
+		// Make the window smaller.
+		SetWindowPos(hWnd, nullptr, 0, 0, 270, 172, SWP_NOMOVE);
+	} else {
+		// Add saturation controls.
+		feature = CreateFeatureGroup(hWnd, L"Saturation", 45,
+			&DriverInterface::GetSaturationInfo, &DriverInterface::SetSaturation);
+		features.insert(std::make_pair(feature.trackbar, feature));
+
+		// Add contrast controls.
+		feature = CreateFeatureGroup(hWnd, L"Contrast", 130,
+			&DriverInterface::GetContrastInfo, &DriverInterface::SetContrast);
+		features.insert(std::make_pair(feature.trackbar, feature));
+
+		// Add brightness controls.
+		feature = CreateFeatureGroup(hWnd, L"Brightness", 215,
+			&DriverInterface::GetBrightnessInfo, &DriverInterface::SetBrightness);
+		features.insert(std::make_pair(feature.trackbar, feature));
+
+		// Add hue controls.
+		feature = CreateFeatureGroup(hWnd, L"Hue", 300,
+			&DriverInterface::GetHueInfo, &DriverInterface::SetHue);
+		features.insert(std::make_pair(feature.trackbar, feature));
+	}
+
+	// Set the selected display and update all controls with the correct values.
+	UpdateSelectedDisplay(combobox);
+
+	// Set the font of all controls.
+	EnumChildWindows(hWnd, reinterpret_cast<WNDENUMPROC>(SetFont),
+		reinterpret_cast<LPARAM>(GetStockObject(DEFAULT_GUI_FONT)));
+}
+
 HWND CreateComboBox(HWND hWnd) {
 	HWND hWndComboBox = CreateWindow(WC_COMBOBOX, L"Monitor combobox",
-		CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_VISIBLE,
+		WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS,
 		10, 10, 235, 50,
 		hWnd, nullptr, hInst, nullptr);
 	std::vector<std::wstring> displays = driverInterface->GetDisplayNames();
@@ -102,12 +147,11 @@ HWND CreateComboBox(HWND hWnd) {
 		return nullptr;
 	}
 
+	// Add all display names to the combobox.
 	for (auto const& display : displays) {
-		if (selectedDisplay.empty()) {
-			selectedDisplay = display;
-		}
 		SendMessage(hWndComboBox, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(display.c_str()));
 	}
+
 	// Select first monitor.
 	SendMessage(hWndComboBox, CB_SETCURSEL, 0, 0);
 
@@ -116,25 +160,29 @@ HWND CreateComboBox(HWND hWnd) {
 	return hWndComboBox;
 }
 
-HWND CreateLabel(HWND hWnd) {
-	HWND hWndLabel = CreateWindow(WC_STATIC, L"", WS_CHILD | WS_VISIBLE,
-		10, 50, 235, 30,
+Feature CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter) {
+	// Create the groupbox.
+	CreateWindow(WC_BUTTON, name,
+		WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+		5, yOffset, 245, 85,
 		hWnd, nullptr, hInst, nullptr);
-	UpdateLabel(hWndLabel);
-	return hWndLabel;
-}
 
-HWND CreateTrackBar(HWND hWnd) {
-	HWND hWndTrackbar = CreateWindow(TRACKBAR_CLASS, L"Saturation trackbar",
+	// Create the label.
+	HWND hWndLabel = CreateWindow(WC_STATIC, name,
 		WS_CHILD | WS_VISIBLE,
-		10, 90, 235, 30,
-		hWnd, nullptr, hInst, nullptr
-	);
+		10, yOffset + 20, 235, 30,
+		hWnd, nullptr, hInst, nullptr);
+
+	// Create the trackbar.
+	HWND hWndTrackbar = CreateWindow(TRACKBAR_CLASS, name,
+		WS_CHILD | WS_VISIBLE,
+		10, yOffset + 50, 235, 30,
+		hWnd, nullptr, hInst, nullptr);
+
 	// Hide the dashed focus outline.
 	SendMessage(hWndTrackbar, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 
-	UpdateTrackBar(hWndTrackbar);
-	return hWndTrackbar;
+	return {name, hWndTrackbar, hWndLabel, getter, setter};
 }
 
 void UpdateSelectedDisplay(HWND hWndCombobox) {
@@ -142,35 +190,38 @@ void UpdateSelectedDisplay(HWND hWndCombobox) {
 	LRESULT selectedIndex = SendMessage(hWndCombobox, CB_GETCURSEL, 0, 0);
 
 	// Save the name of the selected display.
-	TCHAR selectedName[256];
+	TCHAR selectedName[MAX_PATH];
 	SendMessage(hWndCombobox, CB_GETLBTEXT, selectedIndex, reinterpret_cast<LPARAM>(selectedName));
 	selectedDisplay = selectedName;
-	UpdateLabel(label);
-	UpdateTrackBar(trackbar);
+
+	// Update the labels and trackbars.
+	for (auto const& feature : features) {
+		auto info = invoke(feature.second.getInfoFunction, driverInterface, selectedDisplay);
+		UpdateLabel(feature.second.label, info);
+		UpdateTrackBar(feature.second.trackbar, info);
+	}
 }
 
-void UpdateSaturation(HWND hWndTrackbar) {
-	// Set saturation and update the level with the new one.
-	int newValue = static_cast<int>(SendMessage(hWndTrackbar, TBM_GETPOS, 0, 0));
-	driverInterface->SetSaturation(selectedDisplay, newValue);
-	UpdateLabel(label);
+void UpdateFeatureValues(HWND hWndTrackbar) {
+	// Set the selected value of the trackbar and update the label accordingly.
+	Feature feature = features.at(hWndTrackbar);
+	int newValue = static_cast<int>(SendMessage(feature.trackbar, TBM_GETPOS, 0, 0));
+	invoke(feature.setValueFunction, driverInterface, selectedDisplay, newValue);
+	UpdateLabel(feature.label, invoke(feature.getInfoFunction, driverInterface, selectedDisplay));
 }
 
-void UpdateTrackBar(HWND hwndTrack) {
-	DriverInterface::FeatureValues info = driverInterface->GetSaturationInfo(selectedDisplay);
-
+void UpdateTrackBar(HWND hwndTrackbar, DriverInterface::FeatureValues info) {
 	// Update the min, max and current saturation.
-	SendMessage(hwndTrack, TBM_SETRANGE, TRUE, MAKELONG(info.minValue, info.maxValue));
-	SendMessage(hwndTrack, TBM_SETPOS, TRUE, info.currentValue);
+	SendMessage(hwndTrackbar, TBM_SETRANGE, TRUE, MAKELONG(info.minValue, info.maxValue));
+	SendMessage(hwndTrackbar, TBM_SETPOS, TRUE, info.currentValue);
 }
 
-void UpdateLabel(HWND hWndLabel) {
-	DriverInterface::FeatureValues info = driverInterface->GetSaturationInfo(selectedDisplay);
-
-	// Update the text for default and max saturation.
-	wchar_t buf[50];
-	wsprintf(buf, L"Default Saturation: %ld%\nCurrent Saturation: %ld%", info.defaultValue, info.currentValue);
-	SetWindowText(hWndLabel, buf);
+void UpdateLabel(HWND hWndLabel, DriverInterface::FeatureValues info) {
+	// Update the text with default and current values.
+	TCHAR labelText[MAX_PATH];
+	StringCbPrintf(labelText, _countof(labelText), L"Default: %ld%\nCurrent: %ld%",
+		info.defaultValue, info.currentValue);
+	SetWindowText(hWndLabel, labelText);
 }
 
 BOOL __stdcall SetFont(HWND hWnd, LPARAM font) {

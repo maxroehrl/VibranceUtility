@@ -55,7 +55,7 @@ std::vector<std::wstring> NvApi::GetDisplayNames() const {
 	return displayNames;
 }
 
-DriverInterface::FeatureValues NvApi::GetSaturationInfo(const std::wstring displayName) const {
+DriverInterface::FeatureValues NvApi::GetDigitalVibranceInfo(const std::wstring displayName) const {
 	NV_DISPLAY_DVC_INFO_EX info = {};
 	info.version = sizeof(NV_DISPLAY_DVC_INFO_EX) | 0x10000;
 	NvAPI_GetDVCInfoEx(GetHandle(displayName), 0, &info);
@@ -67,7 +67,7 @@ DriverInterface::FeatureValues NvApi::GetSaturationInfo(const std::wstring displ
 	return {info.currentLevel, info.defaultLevel, info.minLevel, info.maxLevel};
 }
 
-void NvApi::SetSaturation(const std::wstring displayName, const int newValue) const {
+void NvApi::SetDigitalVibrance(const std::wstring displayName, const int newValue) const {
 	// HACK: The reported max digital vibrance of 100 gets already set with the newValue 63.
 	NvAPI_SetDVCLevel(GetHandle(displayName), 0, newValue * 0.63);
 }

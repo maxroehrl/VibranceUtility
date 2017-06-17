@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <codecvt>
 #include <filesystem>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -25,3 +26,5 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <tchar.h>
+
+#include <Strsafe.h> 

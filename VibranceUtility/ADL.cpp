@@ -38,11 +38,11 @@ ADL::ADL() {
 
 	// Repeat for all available adapters in the system.
 	for (int i = 0; i < numberAdapters; i++) {
-		int iAdapterIndex = adapterInfo[i].iAdapterIndex;
+		int adapterIndex = adapterInfo[i].iAdapterIndex;
 		LPADLDisplayInfo adlDisplayInfo = nullptr;
 		int numDisplays;
 
-		if (ADL_OK != ADL_Display_DisplayInfo_Get(iAdapterIndex, &numDisplays, &adlDisplayInfo, 0)) {
+		if (ADL_OK != ADL_Display_DisplayInfo_Get(adapterIndex, &numDisplays, &adlDisplayInfo, 0)) {
 			continue;
 		}
 
@@ -56,18 +56,19 @@ ADL::ADL() {
 			}
 
 			// Check if the display is mapped to the current adapter.
-			if (iAdapterIndex != adlDisplayInfo[j].displayID.iDisplayLogicalAdapterIndex) {
+			if (adapterIndex != adlDisplayInfo[j].displayID.iDisplayLogicalAdapterIndex) {
 				continue;
 			}
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 			DisplayAdapterInfo display;
-			display.adapterIndex = iAdapterIndex;
+			display.adapterIndex = adapterIndex;
 			display.displayIndex = adlDisplayInfo[j].displayID.iDisplayLogicalIndex;
-			display.name = converter.from_bytes(adlDisplayInfo[j].strDisplayName);
+			display.name = L"\\\\.\\DISPLAY" + std::to_wstring(display.displayIndex);
 
 			// Check if display supports changing the saturation.
-			if (IsFeatureSupported(display, ADL_DISPLAY_COLOR_SATURATION)) {
-				displays.push_back(display);
+			if (GetColorCaps(display) & (ADL_DISPLAY_COLOR_CONTRAST | ADL_DISPLAY_COLOR_BRIGHTNESS
+				| ADL_DISPLAY_COLOR_HUE | ADL_DISPLAY_COLOR_SATURATION)) {
+				displays.insert(make_pair(display.name, display));
 			}
 		}
 		ADL_Main_Memory_Free(reinterpret_cast<void**>(&adlDisplayInfo));
@@ -81,48 +82,67 @@ ADL::~ADL() {
 }
 
 std::vector<std::wstring> ADL::GetDisplayNames() const {
-	std::vector<std::wstring> names{};
+	std::vector<std::wstring> names;
 
 	for (auto const& display : displays) {
-		names.push_back(display.name);
+		names.push_back(display.first);
 	}
 	return names;
 }
 
 ADL::FeatureValues ADL::GetSaturationInfo(const std::wstring displayName) const {
-	int currentValue, defaultValue, minValue, maxValue;
-	DisplayAdapterInfo displayInfo = GetDisplayInfo(displayName);
+	return GetFeatureValues(displayName, ADL_DISPLAY_COLOR_SATURATION);
+}
 
-	ADL_Display_Color_Get(displayInfo.adapterIndex, displayInfo.displayIndex, ADL_DISPLAY_COLOR_SATURATION,
+void ADL::SetSaturation(const std::wstring displayName, const int newValue) const {
+	SetFeatureValues(displayName, ADL_DISPLAY_COLOR_SATURATION, newValue);
+}
+
+DriverInterface::FeatureValues ADL::GetContrastInfo(const std::wstring displayName) const {
+	return GetFeatureValues(displayName, ADL_DISPLAY_COLOR_CONTRAST);
+}
+
+void ADL::SetContrast(const std::wstring displayName, const int newValue) const {
+	SetFeatureValues(displayName, ADL_DISPLAY_COLOR_CONTRAST, newValue);
+}
+
+DriverInterface::FeatureValues ADL::GetBrightnessInfo(const std::wstring displayName) const {
+	return GetFeatureValues(displayName, ADL_DISPLAY_COLOR_BRIGHTNESS);
+}
+
+void ADL::SetBrightness(const std::wstring displayName, const int newValue) const {
+	SetFeatureValues(displayName, ADL_DISPLAY_COLOR_BRIGHTNESS, newValue);
+}
+
+DriverInterface::FeatureValues ADL::GetHueInfo(const std::wstring displayName) const {
+	return GetFeatureValues(displayName, ADL_DISPLAY_COLOR_HUE);
+}
+
+void ADL::SetHue(const std::wstring displayName, const int newValue) const {
+	SetFeatureValues(displayName, ADL_DISPLAY_COLOR_HUE, newValue);
+}
+
+DriverInterface::FeatureValues ADL::GetFeatureValues(const std::wstring displayName, const int feature) const {
+	int currentValue, defaultValue, minValue, maxValue;
+	DisplayAdapterInfo displayInfo = displays.at(displayName);
+
+	ADL_Display_Color_Get(displayInfo.adapterIndex, displayInfo.displayIndex, feature,
 		&currentValue, &defaultValue, &minValue, &maxValue, nullptr);
 
 	return {currentValue, defaultValue, minValue, maxValue};
 }
 
-void ADL::SetSaturation(const std::wstring displayName, const int newValue) const {
-	DisplayAdapterInfo displayInfo = GetDisplayInfo(displayName);
-	ADL_Display_Color_Set(displayInfo.adapterIndex, displayInfo.displayIndex,
-		ADL_DISPLAY_COLOR_SATURATION, newValue);
+int ADL::GetColorCaps(const DisplayAdapterInfo displayInfo) const {
+	int colorCaps, validBits;
+	ADL_Display_ColorCaps_Get(displayInfo.adapterIndex, displayInfo.displayIndex, &colorCaps, &validBits);
+
+	// Use only the valid bits from colorCaps.
+	return colorCaps & validBits;
 }
 
-ADL::DisplayAdapterInfo ADL::GetDisplayInfo(const std::wstring displayName) const {
-	for(auto const& display : displays) {
-		if (display.name == displayName) {
-			return display;
-		}
-	}
-	return {};
-}
-
-bool ADL::IsFeatureSupported(const DisplayAdapterInfo display, const int feature) const {
-	int iColorCaps, iValidBits;
-	ADL_Display_ColorCaps_Get(display.adapterIndex, display.displayIndex, &iColorCaps, &iValidBits);
-
-	// Use only the valid bits from iColorCaps.
-	iColorCaps &= iValidBits;
-
-	// Check if the display supports this particular capability.
-	return feature & iColorCaps;
+void ADL::SetFeatureValues(const std::wstring displayName, const int feature, const int newValue) const {
+	DisplayAdapterInfo displayInfo = displays.at(displayName);
+	ADL_Display_Color_Set(displayInfo.adapterIndex, displayInfo.displayIndex, feature, newValue);
 }
 
 void* __stdcall ADL::ADL_Main_Memory_Alloc(const int iSize) {

@@ -7,8 +7,21 @@ public:
 	ADL();
 	~ADL() override;
 	std::vector<std::wstring> GetDisplayNames() const override;
+
+	FeatureValues GetDigitalVibranceInfo(const std::wstring displayName) const override { throw std::runtime_error("Unsupported operation"); }
+	void SetDigitalVibrance(const std::wstring displayName, const int newValue) const override { throw std::runtime_error("Unsupported operation"); }
+
 	FeatureValues GetSaturationInfo(const std::wstring displayName) const override;
 	void SetSaturation(const std::wstring displayName, const int newValue) const override;
+
+	FeatureValues GetContrastInfo(const std::wstring displayName) const override;
+	void SetContrast(const std::wstring displayName, const int newValue) const override;
+
+	FeatureValues GetBrightnessInfo(const std::wstring displayName) const override;
+	void SetBrightness(const std::wstring displayName, const int newValue) const override;
+
+	FeatureValues GetHueInfo(const std::wstring displayName) const override;
+	void SetHue(const std::wstring displayName, const int newValue) const override;
 
 private:
 	struct DisplayAdapterInfo {
@@ -41,11 +54,12 @@ private:
 	HINSTANCE hDll;
 	LPAdapterInfo adapterInfo;
 	int numberAdapters;
-	std::vector<DisplayAdapterInfo> displays;
+	std::map<std::wstring, DisplayAdapterInfo> displays;
 
 	// Private functions
-	DisplayAdapterInfo GetDisplayInfo(const std::wstring name) const;
-	bool IsFeatureSupported(const DisplayAdapterInfo info, const int feature) const;
+	FeatureValues GetFeatureValues(const std::wstring displayName, const int feature) const;
+	int GetColorCaps(const DisplayAdapterInfo displayInfo) const;
+	void SetFeatureValues(const std::wstring displayName, const int feature, const int newValue) const;
 
 	// Private memory (de-)allocation and functions.
 	static void* __stdcall ADL_Main_Memory_Alloc(const int iSize);
