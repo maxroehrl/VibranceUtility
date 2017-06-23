@@ -88,8 +88,8 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 }
 
 void CreateControls(HWND hWnd) {
-	Feature feature;
-	combobox = CreateComboBox(hWnd, L"Monitor Combobox", 10);
+	int yOffset = 10;
+	combobox = CreateComboBox(hWnd, L"Monitor Combobox", yOffset);
 
 	// If the combobox is null no supported displays were found.
 	if (combobox == nullptr) {
@@ -97,33 +97,20 @@ void CreateControls(HWND hWnd) {
 	}
 
 	if (!isAMD) {
-		// Add digital vibrance controls.
-		feature = CreateFeatureGroup(hWnd, L"Digital Vibrance", 45,
+		CreateFeatureGroup(hWnd, L"Digital Vibrance", yOffset += 35,
 			&DriverInterface::GetDigitalVibranceInfo, &DriverInterface::SetDigitalVibrance);
-		features.insert(std::make_pair(feature.trackbar, feature));
 
 		// Make the window smaller.
 		SetWindowPos(hWnd, nullptr, 0, 0, 270, 172, SWP_NOMOVE);
 	} else {
-		// Add saturation controls.
-		feature = CreateFeatureGroup(hWnd, L"Saturation", 45,
+		CreateFeatureGroup(hWnd, L"Saturation", yOffset += 35,
 			&DriverInterface::GetSaturationInfo, &DriverInterface::SetSaturation);
-		features.insert(std::make_pair(feature.trackbar, feature));
-
-		// Add contrast controls.
-		feature = CreateFeatureGroup(hWnd, L"Contrast", 130,
+		CreateFeatureGroup(hWnd, L"Contrast", yOffset += 85,
 			&DriverInterface::GetContrastInfo, &DriverInterface::SetContrast);
-		features.insert(std::make_pair(feature.trackbar, feature));
-
-		// Add brightness controls.
-		feature = CreateFeatureGroup(hWnd, L"Brightness", 215,
+		CreateFeatureGroup(hWnd, L"Brightness", yOffset += 85,
 			&DriverInterface::GetBrightnessInfo, &DriverInterface::SetBrightness);
-		features.insert(std::make_pair(feature.trackbar, feature));
-
-		// Add hue controls.
-		feature = CreateFeatureGroup(hWnd, L"Hue", 300,
+		CreateFeatureGroup(hWnd, L"Hue", yOffset += 85,
 			&DriverInterface::GetHueInfo, &DriverInterface::SetHue);
-		features.insert(std::make_pair(feature.trackbar, feature));
 	}
 
 	// Set the selected display and update all controls with the correct values.
@@ -161,7 +148,7 @@ HWND CreateComboBox(HWND hWnd, LPCWSTR name, int yOffset) {
 	return hWndComboBox;
 }
 
-Feature CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter) {
+void CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter) {
 	// Create the groupbox.
 	CreateWindow(WC_BUTTON, name,
 		WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
@@ -183,7 +170,8 @@ Feature CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter
 	// Hide the dashed focus outline.
 	SendMessage(hWndTrackbar, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 
-	return {name, hWndTrackbar, hWndLabel, getter, setter};
+	Feature feature = {name, hWndTrackbar, hWndLabel, getter, setter};
+	features.insert(std::make_pair(hWndTrackbar, feature));
 }
 
 void UpdateSelectedDisplay(HWND hWndCombobox) {

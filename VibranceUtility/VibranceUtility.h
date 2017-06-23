@@ -34,7 +34,7 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd);
 
 void CreateControls(HWND hWnd);
 HWND CreateComboBox(HWND hWnd, LPCWSTR name, int yOffset);
-Feature CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter);
+void CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter);
 
 void UpdateSelectedDisplay(HWND hWndCombobox);
 void UpdateFeatureValues(HWND hWndTrackbar);
