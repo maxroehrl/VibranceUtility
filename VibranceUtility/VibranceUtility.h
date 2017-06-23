@@ -28,17 +28,17 @@ HINSTANCE hInst;
 HWND combobox;
 
 // Functions
-LRESULT __stdcall WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-std::unique_ptr<DriverInterface> CreateDriverInterface(HWND);
+std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd);
 
-void CreateControls(HWND);
-HWND CreateComboBox(HWND);
-Feature CreateFeatureGroup(HWND, LPCWSTR, int, GET_INFO, SET_VALUE);
+void CreateControls(HWND hWnd);
+HWND CreateComboBox(HWND hWnd);
+Feature CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter);
 
-void UpdateSelectedDisplay(HWND);
-void UpdateFeatureValues(HWND);
-void UpdateTrackBar(HWND, DriverInterface::FeatureValues);
-void UpdateLabel(HWND, DriverInterface::FeatureValues);
+void UpdateSelectedDisplay(HWND hWndCombobox);
+void UpdateFeatureValues(HWND hWndTrackbar);
+void UpdateTrackBar(HWND hWndTrackbar, DriverInterface::FeatureValues info);
+void UpdateLabel(HWND hWndLabel, DriverInterface::FeatureValues info);
 
-BOOL __stdcall SetFont(HWND, LPARAM);
+BOOL __stdcall SetFont(HWND hWnd, LPARAM font);
