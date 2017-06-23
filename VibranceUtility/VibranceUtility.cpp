@@ -89,7 +89,7 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 
 void CreateControls(HWND hWnd) {
 	Feature feature;
-	combobox = CreateComboBox(hWnd);
+	combobox = CreateComboBox(hWnd, L"Monitor Combobox", 10);
 
 	// If the combobox is null no supported displays were found.
 	if (combobox == nullptr) {
@@ -134,10 +134,10 @@ void CreateControls(HWND hWnd) {
 		reinterpret_cast<LPARAM>(GetStockObject(DEFAULT_GUI_FONT)));
 }
 
-HWND CreateComboBox(HWND hWnd) {
-	HWND hWndComboBox = CreateWindow(WC_COMBOBOX, L"Monitor combobox",
+HWND CreateComboBox(HWND hWnd, LPCWSTR name, int yOffset) {
+	HWND hWndComboBox = CreateWindow(WC_COMBOBOX, name,
 		WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS,
-		10, 10, 235, 50,
+		10, yOffset, 235, 50,
 		hWnd, nullptr, hInst, nullptr);
 	std::vector<std::wstring> displays = driverInterface->GetDisplayNames();
 
@@ -157,6 +157,7 @@ HWND CreateComboBox(HWND hWnd) {
 
 	// Hide the dashed focus outline.
 	SendMessage(hWndComboBox, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
+
 	return hWndComboBox;
 }
 
