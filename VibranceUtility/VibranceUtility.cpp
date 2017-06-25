@@ -142,7 +142,7 @@ HWND CreateComboBox(HWND hWnd, LPCWSTR name, int yOffset) {
 
 void CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, SET_VALUE setter) {
 	// Create the groupbox.
-	CreateWindow(WC_BUTTON, name,
+	HWND hWndGroupbox = CreateWindow(WC_BUTTON, name,
 		WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
 		5, yOffset, 245, 85,
 		hWnd, nullptr, hInst, nullptr);
@@ -162,11 +162,14 @@ void CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, S
 	// Hide the dashed focus outline.
 	SendMessage(hWndTrackbar, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 
-	// Disable the trackbar if this feature is not supported.
+	// Disable the trackbar if this feature is not supported and change the groupbox text.
 	try {
 		invoke(getter, driverInterface, driverInterface->GetDisplayNames()[0]);
 	} catch (std::runtime_error) {
 		EnableWindow(hWndTrackbar, FALSE);
+
+		std::wstring newName = std::wstring(name) + L" (unsupported)";
+		SendMessage(hWndGroupbox, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(newName.c_str()));
 	}
 
 	Feature feature = {name, hWndTrackbar, hWndLabel, getter, setter};
