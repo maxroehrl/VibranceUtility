@@ -65,9 +65,8 @@ ADL::ADL() {
 			display.displayIndex = adlDisplayInfo[j].displayID.iDisplayLogicalIndex;
 			display.name = L"\\\\.\\DISPLAY" + std::to_wstring(display.displayIndex);
 
-			// Check if display supports changing the saturation.
-			if (GetColorCaps(display) & (ADL_DISPLAY_COLOR_CONTRAST | ADL_DISPLAY_COLOR_BRIGHTNESS
-				| ADL_DISPLAY_COLOR_HUE | ADL_DISPLAY_COLOR_SATURATION)) {
+			// Check if display supports changing contrast, brightness, hue and saturation.
+			if (HasSupportForAllFeatures(display)) {
 				displays.insert(make_pair(display.name, display));
 			}
 		}
@@ -140,12 +139,13 @@ DriverInterface::FeatureValues ADL::GetFeatureValues(const std::wstring displayN
 	return {currentValue, defaultValue, minValue, maxValue};
 }
 
-int ADL::GetColorCaps(const DisplayAdapterInfo displayInfo) const {
+bool ADL::HasSupportForAllFeatures(const DisplayAdapterInfo displayInfo) const {
 	int colorCaps, validBits;
 	ADL_Display_ColorCaps_Get(displayInfo.adapterIndex, displayInfo.displayIndex, &colorCaps, &validBits);
 
 	// Use only the valid bits from colorCaps.
-	return colorCaps & validBits;
+	return colorCaps & validBits & (ADL_DISPLAY_COLOR_CONTRAST | ADL_DISPLAY_COLOR_BRIGHTNESS
+		| ADL_DISPLAY_COLOR_HUE | ADL_DISPLAY_COLOR_SATURATION);
 }
 
 void ADL::SetFeatureValues(const std::wstring displayName, const int feature, const int newValue) const {

@@ -58,10 +58,10 @@ private:
 
 	// Private functions
 	FeatureValues GetFeatureValues(const std::wstring displayName, const int feature) const;
-	int GetColorCaps(const DisplayAdapterInfo displayInfo) const;
+	bool HasSupportForAllFeatures(const DisplayAdapterInfo displayInfo) const;
 	void SetFeatureValues(const std::wstring displayName, const int feature, const int newValue) const;
 
-	// Private memory (de-)allocation and functions.
+	// Private memory (de-)allocation functions
 	static void* __stdcall ADL_Main_Memory_Alloc(const int iSize);
 	static void __stdcall ADL_Main_Memory_Free(void** lpBuffer);
 };
