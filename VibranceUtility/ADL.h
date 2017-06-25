@@ -8,8 +8,8 @@ public:
 	~ADL() override;
 	std::vector<std::wstring> GetDisplayNames() const override;
 
-	FeatureValues GetDigitalVibranceInfo(const std::wstring displayName) const override { throw std::runtime_error("Unsupported operation"); }
-	void SetDigitalVibrance(const std::wstring displayName, const int newValue) const override { throw std::runtime_error("Unsupported operation"); }
+	FeatureValues GetDigitalVibranceInfo(const std::wstring displayName) const override;
+	void SetDigitalVibrance(const std::wstring displayName, const int newValue) const override;
 
 	FeatureValues GetSaturationInfo(const std::wstring displayName) const override;
 	void SetSaturation(const std::wstring displayName, const int newValue) const override;

@@ -72,6 +72,38 @@ void NvApi::SetDigitalVibrance(const std::wstring displayName, const int newValu
 	NvAPI_SetDVCLevel(GetHandle(displayName), 0, static_cast<int>(newValue * 0.63));
 }
 
+DriverInterface::FeatureValues NvApi::GetSaturationInfo(const std::wstring displayName) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+void NvApi::SetSaturation(const std::wstring displayName, const int newValue) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+DriverInterface::FeatureValues NvApi::GetContrastInfo(const std::wstring displayName) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+void NvApi::SetContrast(const std::wstring displayName, const int newValue) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+DriverInterface::FeatureValues NvApi::GetBrightnessInfo(const std::wstring displayName) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+void NvApi::SetBrightness(const std::wstring displayName, const int newValue) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+DriverInterface::FeatureValues NvApi::GetHueInfo(const std::wstring displayName) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+void NvApi::SetHue(const std::wstring displayName, const int newValue) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
 NvApi::NvDisplayHandle NvApi::GetHandle(const std::wstring displayName) const {
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	NvDisplayHandle handle = nullptr;

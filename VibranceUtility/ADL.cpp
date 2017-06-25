@@ -90,6 +90,14 @@ std::vector<std::wstring> ADL::GetDisplayNames() const {
 	return names;
 }
 
+DriverInterface::FeatureValues ADL::GetDigitalVibranceInfo(const std::wstring displayName) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
+void ADL::SetDigitalVibrance(const std::wstring displayName, const int newValue) const {
+	throw std::runtime_error("Unsupported operation");
+}
+
 ADL::FeatureValues ADL::GetSaturationInfo(const std::wstring displayName) const {
 	return GetFeatureValues(displayName, ADL_DISPLAY_COLOR_SATURATION);
 }
