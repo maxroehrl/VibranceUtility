@@ -21,7 +21,6 @@ struct Feature {
 std::map<HWND, Feature> features;
 std::unique_ptr<DriverInterface> driverInterface;
 std::wstring selectedDisplay;
-bool isAMD;
 
 LPCWSTR szWindowClass = L"VibranceUtility";
 HINSTANCE hInst;

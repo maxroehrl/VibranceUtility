@@ -23,7 +23,7 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 	HWND hWnd = CreateWindow(szWindowClass, L"Vibrance Utility",
 		WS_MINIMIZEBOX | WS_SYSMENU,
-		CW_USEDEFAULT, CW_USEDEFAULT, 270, 430,
+		CW_USEDEFAULT, CW_USEDEFAULT, 270, 513,
 		nullptr, nullptr, hInstance, nullptr);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -70,9 +70,6 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 	bool isAMDDriverPresent = std::experimental::filesystem::exists("C:/Windows/System32/atiadlxx.dll") ||
 		std::experimental::filesystem::exists("C:/Windows/System32/atiadlxy.dll");
 
-	// This flag determines the available GUI controls.
-	isAMD = isAMDDriverPresent;
-
 	if (isAMDDriverPresent && isNvidiaDriverPresent) {
 		MessageBox(hWnd, L"Both AMD and Nvidia drivers were found!", L"Ambiguous drivers", MB_OK);
 		PostMessage(hWnd, WM_CLOSE, 0, 0);
@@ -96,22 +93,17 @@ void CreateControls(HWND hWnd) {
 		return;
 	}
 
-	if (!isAMD) {
-		CreateFeatureGroup(hWnd, L"Digital Vibrance", yOffset += 35,
-			&DriverInterface::GetDigitalVibranceInfo, &DriverInterface::SetDigitalVibrance);
-
-		// Make the window smaller.
-		SetWindowPos(hWnd, nullptr, 0, 0, 270, 172, SWP_NOMOVE);
-	} else {
-		CreateFeatureGroup(hWnd, L"Saturation", yOffset += 35,
-			&DriverInterface::GetSaturationInfo, &DriverInterface::SetSaturation);
-		CreateFeatureGroup(hWnd, L"Contrast", yOffset += 85,
-			&DriverInterface::GetContrastInfo, &DriverInterface::SetContrast);
-		CreateFeatureGroup(hWnd, L"Brightness", yOffset += 85,
-			&DriverInterface::GetBrightnessInfo, &DriverInterface::SetBrightness);
-		CreateFeatureGroup(hWnd, L"Hue", yOffset += 85,
-			&DriverInterface::GetHueInfo, &DriverInterface::SetHue);
-	}
+	// Create all feature groups with label and trackbar.
+	CreateFeatureGroup(hWnd, L"Digital Vibrance", yOffset += 35,
+		&DriverInterface::GetDigitalVibranceInfo, &DriverInterface::SetDigitalVibrance);
+	CreateFeatureGroup(hWnd, L"Saturation", yOffset += 85,
+		&DriverInterface::GetSaturationInfo, &DriverInterface::SetSaturation);
+	CreateFeatureGroup(hWnd, L"Contrast", yOffset += 85,
+		&DriverInterface::GetContrastInfo, &DriverInterface::SetContrast);
+	CreateFeatureGroup(hWnd, L"Brightness", yOffset += 85,
+		&DriverInterface::GetBrightnessInfo, &DriverInterface::SetBrightness);
+	CreateFeatureGroup(hWnd, L"Hue", yOffset += 85,
+		&DriverInterface::GetHueInfo, &DriverInterface::SetHue);
 
 	// Set the selected display and update all controls with the correct values.
 	UpdateSelectedDisplay(combobox);
@@ -170,6 +162,13 @@ void CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, S
 	// Hide the dashed focus outline.
 	SendMessage(hWndTrackbar, WM_UPDATEUISTATE, MAKEWPARAM(UIS_SET, UISF_HIDEFOCUS), 0);
 
+	// Disable the trackbar if this feature is not supported.
+	try {
+		invoke(getter, driverInterface, driverInterface->GetDisplayNames()[0]);
+	} catch (std::runtime_error) {
+		EnableWindow(hWndTrackbar, FALSE);
+	}
+
 	Feature feature = {name, hWndTrackbar, hWndLabel, getter, setter};
 	features.insert(std::make_pair(hWndTrackbar, feature));
 }
@@ -185,7 +184,15 @@ void UpdateSelectedDisplay(HWND hWndCombobox) {
 
 	// Update the labels and trackbars.
 	for (auto const& feature : features) {
-		auto info = invoke(feature.second.getInfoFunction, driverInterface, selectedDisplay);
+		DriverInterface::FeatureValues info;
+
+		// If the feature is not supported dummy values will be displayed.
+		try {
+			info = invoke(feature.second.getInfoFunction, driverInterface, selectedDisplay);
+		} catch (std::runtime_error) {
+			info = {100, 100, 0, 200};
+		}
+
 		UpdateLabel(feature.second.label, info);
 		UpdateTrackBar(feature.second.trackbar, info);
 	}
