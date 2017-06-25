@@ -218,7 +218,7 @@ void UpdateTrackBar(HWND hwndTrackbar, DriverInterface::FeatureValues info) {
 void UpdateLabel(HWND hWndLabel, DriverInterface::FeatureValues info) {
 	// Update the text with default and current values.
 	TCHAR labelText[MAX_PATH];
-	StringCbPrintf(labelText, _countof(labelText), L"Default: %ld%\nCurrent: %ld%",
+	StringCbPrintf(labelText, _countof(labelText), L"Default: %d\nCurrent: %d",
 		info.defaultValue, info.currentValue);
 	SetWindowText(hWndLabel, labelText);
 }
