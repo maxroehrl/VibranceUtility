@@ -63,11 +63,10 @@ ADL::ADL() {
 			DisplayAdapterInfo display;
 			display.adapterIndex = adapterIndex;
 			display.displayIndex = adlDisplayInfo[j].displayID.iDisplayLogicalIndex;
-			display.name = L"\\\\.\\DISPLAY" + std::to_wstring(display.displayIndex);
 
 			// Check if display supports changing contrast, brightness, hue and saturation.
 			if (HasSupportForAllFeatures(display)) {
-				displays.insert(make_pair(display.name, display));
+				displays.insert(make_pair(L"\\\\.\\DISPLAY" + std::to_wstring(display.displayIndex), display));
 			}
 		}
 		ADL_Main_Memory_Free(reinterpret_cast<void**>(&adlDisplayInfo));

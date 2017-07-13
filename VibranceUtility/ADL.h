@@ -27,7 +27,6 @@ private:
 	struct DisplayAdapterInfo {
 		int adapterIndex;
 		int displayIndex;
-		std::wstring name;
 	};
 
 	// Definitions of the used function pointers
