@@ -36,12 +36,11 @@ NvApi::NvApi() {
 		NvDisplayHandle handle = nullptr;
 		char name[64] = {0};
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-		int status = (*NvAPI_EnumNvidiaDisplayHandle)(counter, &handle);
 
-		while (status != NVAPI_END_ENUMERATION) {
+		while (NvAPI_EnumNvidiaDisplayHandle(counter, &handle) != NVAPI_END_ENUMERATION) {
 			NvAPI_GetAssociatedNvidiaDisplayName(handle, name);
 			displayNames.push_back(converter.from_bytes(name));
-			status = (*NvAPI_EnumNvidiaDisplayHandle)(++counter, &handle);
+			counter++;
 		}
 	}
 }
