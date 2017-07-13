@@ -45,7 +45,6 @@ private:
 	using NvAPI_SetDVCLevel_t                      = int(*)(NvDisplayHandle, int, int);
 	using NvAPI_EnumNvidiaDisplayHandle_t          = int(*)(int, NvDisplayHandle*);
 	using NvAPI_EnumPhysicalGPUs_t                 = int(*)(NvPhysicalGpuHandle[64], int*);
-	using NvAPI_GetAssociatedNvidiaDisplayHandle_t = int(*)(const char*, NvDisplayHandle*);
 	using NvAPI_GetAssociatedNvidiaDisplayName_t   = int(*)(NvDisplayHandle, char[64]);
 	using NvAPI_GPU_GetSystemType_t                = int(*)(NvPhysicalGpuHandle, int*);
 
@@ -57,15 +56,13 @@ private:
 	NvAPI_SetDVCLevel_t	                     NvAPI_SetDVCLevel;
 	NvAPI_EnumNvidiaDisplayHandle_t          NvAPI_EnumNvidiaDisplayHandle;
 	NvAPI_EnumPhysicalGPUs_t                 NvAPI_EnumPhysicalGPUs;
-	NvAPI_GetAssociatedNvidiaDisplayHandle_t NvAPI_GetAssociatedNvidiaDisplayHandle;
 	NvAPI_GetAssociatedNvidiaDisplayName_t   NvAPI_GetAssociatedNvidiaDisplayName;
 	NvAPI_GPU_GetSystemType_t                NvAPI_GPU_GetSystemType;
 
 	// Private fields
 	HINSTANCE hDll;
-	std::vector<std::wstring> displayNames;
+	std::map<std::wstring, NvDisplayHandle> displays;
 
 	// Private functions
-	NvDisplayHandle GetHandle(const std::wstring displayName) const;
 	bool IsDesktopGPU() const;
 };
