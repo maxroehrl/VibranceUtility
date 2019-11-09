@@ -31,10 +31,14 @@ ADL::ADL() {
 
 	// Get the AdapterInfo structure for all adapters in the system.
 	if (numberAdapters > 0) {
-		unsigned long long size = sizeof(AdapterInfo) * numberAdapters;
+		SIZE_T size = sizeof(AdapterInfo) * numberAdapters;
 		adapterInfo = static_cast<LPAdapterInfo>(malloc(size));
-		memset(adapterInfo, '\0', size);
-		ADL_Adapter_AdapterInfo_Get(adapterInfo, static_cast<int>(size));
+		if (adapterInfo != 0) {
+			memset(adapterInfo, '\0', size);
+			ADL_Adapter_AdapterInfo_Get(adapterInfo, static_cast<int>(size));
+		}
+	} else {
+		throw std::runtime_error("No adapters found");
 	}
 
 	// Repeat for all available adapters in the system.

@@ -11,6 +11,10 @@ NvApi::NvApi() {
 		hDll = LoadLibraryA("nvapi.dll");
 	}
 
+	if (hDll == nullptr) {
+		throw std::runtime_error("nvapi.dll not found");
+	}
+
 	// Try loading the query function pointer.
 	NvAPI_QueryInterface = reinterpret_cast<NvAPI_QueryInterface_t>(GetProcAddress(hDll, "nvapi_QueryInterface"));
 
