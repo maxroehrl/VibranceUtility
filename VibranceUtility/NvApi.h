@@ -7,20 +7,20 @@ public:
 	~NvApi() override;
 	std::vector<std::wstring> GetDisplayNames() const override;
 
-	FeatureValues GetDigitalVibranceInfo(const std::wstring displayName) const override;
-	void SetDigitalVibrance(const std::wstring displayName, const int newValue) const override;
+	FeatureValues GetDigitalVibranceInfo(std::wstring displayName) const override;
+	void SetDigitalVibrance(std::wstring displayName, int newValue) const override;
 	
-	FeatureValues GetSaturationInfo(const std::wstring displayName) const override;
-	void SetSaturation(const std::wstring displayName, const int newValue) const override;
+	FeatureValues GetSaturationInfo(std::wstring displayName) const override;
+	void SetSaturation(std::wstring displayName, int newValue) const override;
 
-	FeatureValues GetContrastInfo(const std::wstring displayName) const override;
-	void SetContrast(const std::wstring displayName, const int newValue) const override;
+	FeatureValues GetContrastInfo(std::wstring displayName) const override;
+	void SetContrast(std::wstring displayName, int newValue) const override;
 
-	FeatureValues GetBrightnessInfo(const std::wstring displayName) const override;
-	void SetBrightness(const std::wstring displayName, const int newValue) const override;
+	FeatureValues GetBrightnessInfo(std::wstring displayName) const override;
+	void SetBrightness(std::wstring displayName, int newValue) const override;
 
-	FeatureValues GetHueInfo(const std::wstring displayName) const override;
-	void SetHue(const std::wstring displayName, const int newValue) const override;
+	FeatureValues GetHueInfo(std::wstring displayName) const override;
+	void SetHue(std::wstring displayName, int newValue) const override;
 
 private:
 	const int NVAPI_END_ENUMERATION = -7;

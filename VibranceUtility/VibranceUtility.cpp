@@ -2,9 +2,10 @@
 #include "VibranceUtility.h"
 #include "ADL.h"
 #include "NvApi.h"
-#include "resource.h"
+#include "Resource.h"
 
-int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int __stdcall WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
+	                  _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
 	HBRUSH brush = CreateSolidBrush(RGB(240, 240, 240));
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -40,12 +41,10 @@ int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message) {
 	case WM_CREATE:
-		driverInterface = CreateDriverInterface(hWnd);
-
-		// If the driver interface was created the controls can be added.
-		if (driverInterface != nullptr) {
+		try {
+			driverInterface = CreateDriverInterface(hWnd);
 			CreateControls(hWnd);
-		}
+		} catch (std::exception&) {}
 		break;
 	case WM_COMMAND:
 		if (reinterpret_cast<HWND>(lParam) == combobox && HIWORD(wParam) == CBN_SELCHANGE) {
@@ -65,10 +64,10 @@ LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
-	bool isNvidiaDriverPresent = std::experimental::filesystem::exists("C:/Windows/System32/nvapi64.dll") ||
-		std::experimental::filesystem::exists("C:/Windows/System32/nvapi.dll");
-	bool isAMDDriverPresent = std::experimental::filesystem::exists("C:/Windows/System32/atiadlxx.dll") ||
-		std::experimental::filesystem::exists("C:/Windows/System32/atiadlxy.dll");
+	bool isNvidiaDriverPresent = std::filesystem::exists("C:/Windows/System32/nvapi64.dll") ||
+		std::filesystem::exists("C:/Windows/System32/nvapi.dll");
+	bool isAMDDriverPresent = std::filesystem::exists("C:/Windows/System32/atiadlxx.dll") ||
+		std::filesystem::exists("C:/Windows/System32/atiadlxy.dll");
 
 	if (isAMDDriverPresent && isNvidiaDriverPresent) {
 		MessageBox(hWnd, L"Both AMD and Nvidia drivers were found!", L"Ambiguous drivers", MB_OK);
@@ -81,7 +80,7 @@ std::unique_ptr<DriverInterface> CreateDriverInterface(HWND hWnd) {
 		MessageBox(hWnd, L"No AMD or Nvidia driver was found!", L"No driver", MB_OK);
 		PostMessage(hWnd, WM_CLOSE, 0, 0);
 	}
-	return nullptr;
+	throw std::exception("Error creating driver interface");
 }
 
 void CreateControls(HWND hWnd) {
@@ -165,7 +164,7 @@ void CreateFeatureGroup(HWND hWnd, LPCWSTR name, int yOffset, GET_INFO getter, S
 	// Disable the trackbar if this feature is not supported and change the groupbox text.
 	try {
 		invoke(getter, driverInterface, driverInterface->GetDisplayNames()[0]);
-	} catch (std::runtime_error) {
+	} catch (std::runtime_error&) {
 		EnableWindow(hWndTrackbar, FALSE);
 
 		std::wstring newName = std::wstring(name) + L" (unsupported)";
@@ -187,12 +186,12 @@ void UpdateSelectedDisplay(HWND hWndCombobox) {
 
 	// Update the labels and trackbars.
 	for (auto const& feature : features) {
-		DriverInterface::FeatureValues info;
+		DriverInterface::FeatureValues info{};
 
 		// If the feature is not supported dummy values will be displayed.
 		try {
 			info = invoke(feature.second.getInfoFunction, driverInterface, selectedDisplay);
-		} catch (std::runtime_error) {
+		} catch (std::runtime_error&) {
 			info = {100, 100, 0, 200};
 		}
 

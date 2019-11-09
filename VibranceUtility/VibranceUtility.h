@@ -6,8 +6,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 #include "DriverInterface.h"
 
-using GET_INFO = DriverInterface::FeatureValues(DriverInterface::*)(const std::wstring) const;
-using SET_VALUE = void(DriverInterface::*)(const std::wstring, const int) const;
+using GET_INFO = DriverInterface::FeatureValues(DriverInterface::*)(std::wstring) const;
+using SET_VALUE = void(DriverInterface::*)(std::wstring, int) const;
 
 struct Feature {
 	LPCWSTR name;

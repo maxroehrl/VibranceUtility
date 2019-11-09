@@ -17,6 +17,7 @@
 // C RunTime Header Files
 #include <algorithm>
 #include <codecvt>
+#include <cstdlib>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -24,7 +25,6 @@
 #include <vector>
 
 #include <malloc.h>
-#include <stdlib.h>
 #include <tchar.h>
 
 #include <Strsafe.h> 

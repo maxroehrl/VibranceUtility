@@ -26,11 +26,12 @@ ADL::ADL() {
 	// physically present and enabled in the system.
 	ADL_Main_Control_Create(ADL_Main_Memory_Alloc, 1);
 
+	numberAdapters = 0;
 	ADL_Adapter_NumberOfAdapters_Get(&numberAdapters);
 
 	// Get the AdapterInfo structure for all adapters in the system.
 	if (numberAdapters > 0) {
-		size_t size = sizeof(AdapterInfo) * numberAdapters;
+		unsigned long long size = sizeof(AdapterInfo) * numberAdapters;
 		adapterInfo = static_cast<LPAdapterInfo>(malloc(size));
 		memset(adapterInfo, '\0', size);
 		ADL_Adapter_AdapterInfo_Get(adapterInfo, static_cast<int>(size));
@@ -60,7 +61,7 @@ ADL::ADL() {
 				continue;
 			}
 			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-			DisplayAdapterInfo display;
+			DisplayAdapterInfo display{};
 			display.adapterIndex = adapterIndex;
 			display.displayIndex = adlDisplayInfo[j].displayID.iDisplayLogicalIndex;
 
@@ -128,7 +129,7 @@ void ADL::SetHue(const std::wstring displayName, const int newValue) const {
 	SetFeatureValues(displayName, ADL_DISPLAY_COLOR_HUE, newValue);
 }
 
-DriverInterface::FeatureValues ADL::GetFeatureValues(const std::wstring displayName, const int feature) const {
+DriverInterface::FeatureValues ADL::GetFeatureValues(const std::wstring& displayName, const int feature) const {
 	int currentValue, defaultValue, minValue, maxValue;
 	DisplayAdapterInfo displayInfo = displays.at(displayName);
 
@@ -147,7 +148,7 @@ bool ADL::HasSupportForAllFeatures(const DisplayAdapterInfo displayInfo) const {
 		| ADL_DISPLAY_COLOR_HUE | ADL_DISPLAY_COLOR_SATURATION);
 }
 
-void ADL::SetFeatureValues(const std::wstring displayName, const int feature, const int newValue) const {
+void ADL::SetFeatureValues(const std::wstring& displayName, const int feature, const int newValue) const {
 	DisplayAdapterInfo displayInfo = displays.at(displayName);
 	ADL_Display_Color_Set(displayInfo.adapterIndex, displayInfo.displayIndex, feature, newValue);
 }
