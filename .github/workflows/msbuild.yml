@@ -35,7 +35,7 @@ jobs:
       shell: bash
       run: |
         set -xe
-        PKG_PATH=$(ls ./VibranceUtility/**/VibranceUtility.exe)
+        PKG_PATH=D:\a\VibranceUtility\VibranceUtility\x64\Release\VibranceUtility.exe
         PKG_NAME=$(basename "$PKG_PATH")
         echo "PKG_PATH=Software/$PKG_PATH" >> $GITHUB_ENV
         echo "PKG_NAME=$PKG_NAME" >> $GITHUB_ENV
